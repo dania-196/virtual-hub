@@ -8,3 +8,4 @@ eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFvdGZnY3Z
 
 Project ID
 qotfgcvsoejaqbjbhowl
+GROQ_API_KEY=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

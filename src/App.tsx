@@ -6,7 +6,6 @@ import Landing from './pages/Landing'
 import Dashboard from './pages/Dashboard'
 import EmbeddedLab from './pages/EmbeddedLab'
 import NetworkLab from './pages/NetworkLab'
-import RoboticsLab from './pages/RoboticsLab'
 import ChangePassword from './pages/ChangePassword'
 import EditProfile from './pages/EditProfile'
 import Settings from './pages/Settings'
@@ -54,7 +53,6 @@ function App() {
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/lab/iot" element={<EmbeddedLab />} />
         <Route path="/lab/network" element={<NetworkLab />} />
-        <Route path="/lab/robotics" element={<RoboticsLab />} />
         <Route path="/lab/assembly" element={<AssemblyLab />} />
         <Route path="/lab/circuit" element={<CircuitLab />} />
         <Route path="/change-password" element={<ChangePassword />} />

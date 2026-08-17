@@ -10,20 +10,14 @@ export default function Settings() {
   const [fullName, setFullName] = useState('')
   const [major, setMajor] = useState('Computer Engineering')
   const [bio, setBio] = useState('')
-  const [profileImg, setProfileImg] = useState<string | null>(null)
-
-  const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (file) setProfileImg(URL.createObjectURL(file))
-  }
 
   const sidebarItems = [
-    { icon: 'fa-house', label: 'Dashboard', path: '/' },
-    { icon: 'fa-microchip', label: 'IoT Lab', path: '/lab/iot' },
-    { icon: 'fa-network-wired', label: 'Network Lab', path: '/lab/network' },
-    { icon: 'fa-robot', label: 'Robotics Lab', path: '/lab/robotics' },
-    { icon: 'fa-gauge', label: 'My Dashboard', path: '/dashboard' },
-    { icon: 'fa-user', label: 'Profile', path: '/settings' },
+    { icon: 'fa-gauge', label: 'Dashboard', path: '/dashboard' },
+    { icon: 'fa-laptop-code', label: 'Embedded Lab', path: '/lab/embedded' },
+    { icon: 'fa-code', label: 'Assembly', path: '/lab/assembly' },
+    { icon: 'fa-bolt', label: 'Circuit', path: '/lab/circuit' },
+    { icon: 'fa-microchip', label: 'Network Lab', path: '/lab/network' },
+    { icon: 'fa-user', label: 'Profile', path: '/profile' },
     { icon: 'fa-gear', label: 'Settings', path: '/settings', active: true },
   ]
 
@@ -36,7 +30,6 @@ export default function Settings() {
         .sidebar-item:hover { background: linear-gradient(90deg,#ff69b4,#9b59b6) !important; }
         .setting-item:hover { background: #241046; }
         .logout-item:hover { background: #3a123c; }
-        .change-photo-btn:hover { transform: scale(1.05); }
         .switch input { display: none; }
         .slider { position: absolute; inset: 0; background: #666; border-radius: 30px; transition: .3s; cursor: pointer; }
         .slider::before { content: ""; position: absolute; width: 22px; height: 22px; left: 3px; top: 3px; border-radius: 50%; background: #fff; transition: .3s; }
@@ -57,7 +50,13 @@ export default function Settings() {
               <li
                 key={item.label}
                 className="sidebar-item"
-                onClick={() => navigate(item.path)}
+                onClick={() => {
+                  if (item.path === '/profile') {
+                    setShowEditProfile(true)
+                  } else {
+                    navigate(item.path)
+                  }
+                }}
                 style={{
                   display: 'flex', alignItems: 'center', gap: '15px',
                   padding: '15px', marginBottom: '10px', borderRadius: '15px',
@@ -77,36 +76,6 @@ export default function Settings() {
           <h1 style={{ fontSize: '34px', marginBottom: '30px' }}>Settings</h1>
 
           <div style={{ width: '700px', maxWidth: '100%', background: '#1a0030', borderRadius: '25px', overflow: 'hidden', boxShadow: '0 10px 30px rgba(0,0,0,.3)' }}>
-
-            {/* Profile Section */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '20px', padding: '25px', borderBottom: '1px solid rgba(255,255,255,.08)' }}>
-              {profileImg ? (
-                <img src={profileImg} style={{ width: '90px', height: '90px', borderRadius: '50%', objectFit: 'cover', border: '3px solid #ff69b4' }} />
-              ) : (
-                <div style={{
-                  width: '90px', height: '90px', borderRadius: '50%',
-                  border: '3px solid #ff69b4',
-                  background: 'linear-gradient(135deg,#ff69b4,#9b59b6)',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  fontSize: '36px', boxShadow: '0 0 20px rgba(255,105,180,0.5)'
-                }}>👤</div>
-              )}
-              <div>
-                <h2 style={{ marginBottom: '10px' }}>Your Profile</h2>
-                <label
-                  htmlFor="profileUpload"
-                  className="change-photo-btn"
-                  style={{
-                    display: 'inline-block', padding: '10px 18px', borderRadius: '20px',
-                    background: 'linear-gradient(90deg,#ff69b4,#9b59b6)',
-                    color: '#fff', cursor: 'pointer', transition: '.3s', fontSize: '14px'
-                  }}
-                >
-                  Change Photo
-                </label>
-                <input type="file" id="profileUpload" accept="image/*" hidden onChange={handlePhotoChange} />
-              </div>
-            </div>
 
             {/* Edit Profile */}
             <div className="setting-item" onClick={() => setShowEditProfile(true)}

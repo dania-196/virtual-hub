@@ -20,26 +20,60 @@
 
         <p class="subtitle">Update your personal information.</p>
 
+        <!-- تم إزالة onsubmit ومنع حدوث أي تضارب -->
         <form>
 
             <label>Full Name</label>
-            <input type="text" placeholder="Enter your full name" value="Assal Al-Nabulsi">
+            <input type="text" id="fullName" placeholder="Enter your full name">
 
             <label>Email</label>
-            <input type="email" placeholder="Enter your email">
+            <input type="email" id="email" placeholder="Enter your email">
 
             <label>Major</label>
-            <input type="text" placeholder="e.g. Computer Engineering" value="Computer Engineering">
+            <input type="text" id="major" placeholder="e.g. Computer Engineering">
 
             <label>Bio</label>
-            <textarea placeholder="Tell us a bit about yourself..." rows="4"></textarea>
+            <textarea id="bio" placeholder="Tell us a bit about yourself..." rows="4"></textarea>
 
-            <button type="submit">Save Changes</button>
+            <!-- جعلنا الزر ينفذ الدالة مباشرة عبر onclick ونوعه button -->
+            <button type="button" onclick="saveProfile()">Save Changes</button>
 
         </form>
 
     </div>
 </div>
+
+<script>
+    // جلب البيانات المخزنة مسبقاً وعرضها في الحقول عند فتح الصفحة
+    window.addEventListener('DOMContentLoaded', () => {
+        const savedName = localStorage.getItem('userName');
+        const savedEmail = localStorage.getItem('userEmail');
+        const savedMajor = localStorage.getItem('userMajor');
+        const savedBio = localStorage.getItem('userBio');
+
+        if (savedName) document.getElementById('fullName').value = savedName;
+        if (savedEmail) document.getElementById('email').value = savedEmail;
+        if (savedMajor) document.getElementById('major').value = savedMajor;
+        if (savedBio) document.getElementById('bio').value = savedBio;
+    });
+
+    // حفظ التعديلات والعودة فوراً للداشبورد بسلاسة
+    function saveProfile() {
+        const name = document.getElementById('fullName').value;
+        const email = document.getElementById('email').value;
+        const major = document.getElementById('major').value;
+        const bio = document.getElementById('bio').value;
+
+        // تخزين البيانات في الـ LocalStorage
+        localStorage.setItem('userName', name);
+        localStorage.setItem('userEmail', email);
+        localStorage.setItem('userMajor', major);
+        localStorage.setItem('userBio', bio);
+
+        // التوجيه الفوري للداشبورد بدون أي صفحات فارغة أو ريلود
+        window.location.href = '../dashboard/dashboard2.html';
+    }
+</script>
 
 </body>
 </html>
