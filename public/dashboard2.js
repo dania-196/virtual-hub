@@ -75,7 +75,7 @@ const labsList = [
 
     {
         name: "Circuit",
-        link: "../simulation/circuits.html",
+        link: "../simulation/circuit.html",
         icon: "fa-bolt"
     },
 
@@ -394,7 +394,7 @@ const labLinks = {
         "../simulation/assembly.html",
 
     circuit:
-        "../simulation/circuits.html",
+        "../simulation/circuit.html",
 
     network:
         "../simulation/network.html"
