@@ -1,349 +1,252 @@
-import React, { useEffect, useRef, useState } from "react";
-import "./Madly.css";
-import { GROQ_API_KEY, GROQ_API_URL, MODELS } from "./config";
-import { getSystemPrompt } from "./systemPrompt";
+import { useState } from 'react';
+import { GROQ_API_KEY, GROQ_API_URL, MODELS } from './config';
+import { getSystemPrompt } from './systemPrompt';
+import './Madly.css';
 
-type Role = "user" | "assistant" | "system";
+// المسار المباشر لصورة مادلي من مجلد public
+const madlyImg = "/images/robot sign.png";
 
-interface ChatMessage {
-  role: Role;
-  content: string | unknown;
-}
-
-interface DisplayMessage {
-  id: string;
-  role: "user" | "ai";
-  text: string;
-  imageDataUrl?: string | null;
-}
-
-let idCounter = 0;
-function nextId(): string {
-  idCounter += 1;
-  return `msg-${idCounter}`;
+interface Message {
+  role: 'user' | 'assistant';
+  content: string;
 }
 
 export default function MadlyWidget() {
-  const [open, setOpen] = useState(false);
-  const [messages, setMessages] = useState<DisplayMessage[]>([
-    {
-      id: nextId(),
-      role: "ai",
-      text: "أنا مادلي مساعدك الذكي خلال المختبر.\n\nI'm Madly, your AI assistant during the lab.",
-    },
+  const [isOpen, setIsOpen] = useState(false);
+  const [messages, setMessages] = useState<Message[]>([
+    { role: 'assistant', content: 'Hello! I am Madly, your AI engineering mentor. How can I help you today?' }
   ]);
-  const [inputValue, setInputValue] = useState("");
-  const [selectedImageDataUrl, setSelectedImageDataUrl] = useState<string | null>(null);
-  const [isSending, setIsSending] = useState(false);
-  const [isTyping, setIsTyping] = useState(false);
-  const [voiceLang, setVoiceLang] = useState("ar-JO");
-  const [recognizing, setRecognizing] = useState(false);
-  const [micSupported, setMicSupported] = useState(true);
+  const [historyList, setHistoryList] = useState<string[]>([]);
+  const [savedList, setSavedList] = useState<string[]>([]);
+  const [input, setInput] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [activeTab, setActiveTab] = useState<'chat' | 'history' | 'saved' | 'settings'>('chat');
 
-  const historyRef = useRef<ChatMessage[]>([]);
-  const chatBodyRef = useRef<HTMLDivElement | null>(null);
-  const fileInputRef = useRef<HTMLInputElement | null>(null);
-  const recognitionRef = useRef<any>(null);
+  const handleSend = async (textToSend?: string) => {
+    const text = textToSend || input;
+    if (!text.trim() || loading) return;
 
-  useEffect(() => {
-    if (chatBodyRef.current) {
-      chatBodyRef.current.scrollTop = chatBodyRef.current.scrollHeight;
-    }
-  }, [messages, isTyping, open]);
+    const userMessage: Message = { role: 'user', content: text };
+    const updatedMessages = [...messages, userMessage];
+    setMessages(updatedMessages);
+    
+    // إضافة السؤال لقائمة الـ History
+    setHistoryList(prev => [text, ...prev]);
 
-  useEffect(() => {
-    const SpeechRecognitionAPI =
-      (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-
-    if (!SpeechRecognitionAPI) {
-      setMicSupported(false);
-      return;
-    }
-
-    const recognition = new SpeechRecognitionAPI();
-    recognition.continuous = false;
-    recognition.interimResults = false;
-    recognition.lang = voiceLang;
-
-    recognition.onstart = () => setRecognizing(true);
-    recognition.onend = () => setRecognizing(false);
-    recognition.onerror = () => setRecognizing(false);
-    recognition.onresult = (event: any) => {
-      const transcript = event.results[0][0].transcript;
-      setInputValue((prev) => (prev ? `${prev} ${transcript}` : transcript));
-    };
-
-    recognitionRef.current = recognition;
-  }, []);
-
-  useEffect(() => {
-    if (recognitionRef.current) {
-      recognitionRef.current.lang = voiceLang;
-    }
-  }, [voiceLang]);
-
-  function toggleVoiceLang() {
-    setVoiceLang((prev) => (prev.startsWith("ar") ? "en-US" : "ar-JO"));
-  }
-
-  function toggleMic() {
-    const recognition = recognitionRef.current;
-    if (!recognition) return;
-    if (recognizing) {
-      recognition.stop();
-      return;
-    }
-    recognition.lang = voiceLang;
-    try {
-      recognition.start();
-    } catch {
-      // already started
-    }
-  }
-
-  function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    if (!file.type.startsWith("image/")) {
-      alert("الرجاء اختيار ملف صورة / Please select an image file");
-      return;
-    }
-    const reader = new FileReader();
-    reader.onload = () => {
-      setSelectedImageDataUrl(reader.result as string);
-    };
-    reader.readAsDataURL(file);
-  }
-
-  function removeImagePreview() {
-    setSelectedImageDataUrl(null);
-    if (fileInputRef.current) fileInputRef.current.value = "";
-  }
-
-  async function sendMessage() {
-    const text = inputValue.trim();
-    const imageDataUrl = selectedImageDataUrl;
-    if (!text && !imageDataUrl) return;
-
-    const userLang = text.match(/[\u0600-\u06FF]/) ? "ar" : "en";
-
-    setMessages((prev) => [
-      ...prev,
-      { id: nextId(), role: "user", text, imageDataUrl },
-    ]);
-
-    let apiUserContent: unknown;
-    if (imageDataUrl) {
-      apiUserContent = [
-        { type: "text", text: text || (userLang === "ar" ? "صف هذه الصورة" : "Describe this image") },
-        { type: "image_url", image_url: { url: imageDataUrl } },
-      ];
-    } else {
-      apiUserContent = text;
-    }
-
-    historyRef.current.push({
-      role: "user",
-      content: text || (userLang === "ar" ? "[صورة مرفقة]" : "[attached image]"),
-    });
-
-    setInputValue("");
-    setSelectedImageDataUrl(null);
-    if (fileInputRef.current) fileInputRef.current.value = "";
-    setIsSending(true);
-    setIsTyping(true);
+    if (!textToSend) setInput('');
+    setLoading(true);
 
     try {
-      const priorHistory = historyRef.current.slice(0, -1).map((m) => ({
-        role: m.role,
-        content: m.content,
-      }));
+      const userLang = /[\u0600-\u06FF]/.test(text) ? 'ar' : 'en';
+      const systemPromptText = getSystemPrompt(userLang);
 
       const apiMessages = [
-        { role: "system", content: getSystemPrompt(userLang as "ar" | "en") },
-        ...priorHistory,
-        { role: "user", content: apiUserContent },
+        { role: 'system', content: systemPromptText },
+        ...updatedMessages.map(m => ({ role: m.role, content: m.content }))
       ];
 
-      const model = imageDataUrl ? MODELS.vision : MODELS.text;
-
       const response = await fetch(GROQ_API_URL, {
-        method: "POST",
+        method: 'POST',
         headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${GROQ_API_KEY}`,
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${GROQ_API_KEY}`
         },
         body: JSON.stringify({
-          model,
+          model: MODELS.text || "llama-3.1-8b-instant",
           messages: apiMessages,
           max_tokens: 1000,
-          temperature: 0.7,
-        }),
+          temperature: 0.7
+        })
       });
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        throw new Error((errorData as any)?.error?.message || `Error ${response.status}`);
+        throw new Error(errorData.error?.message || `Error ${response.status}`);
       }
 
       const data = await response.json();
-      const replyText: string = (data as any)?.choices?.[0]?.message?.content || "";
+      const replyText = data.choices?.[0]?.message?.content || "";
 
-      setIsTyping(false);
-      setMessages((prev) => [
-        ...prev,
-        {
-          id: nextId(),
-          role: "ai",
-          text: replyText || (userLang === "ar" ? "عذراً، لم أحصل على رد." : "Sorry, I didn't get a response."),
-        },
-      ]);
-      historyRef.current.push({ role: "assistant", content: replyText });
-    } catch (err) {
-      setIsTyping(false);
-      const message = err instanceof Error ? err.message : String(err);
-      setMessages((prev) => [...prev, { id: nextId(), role: "ai", text: `خطأ: ${message}` }]);
+      const finalReply = replyText || (userLang === 'ar' ? "عذراً، لم أحصل على رد." : "Sorry, I didn't get a response.");
+      setMessages(prev => [...prev, { role: 'assistant', content: finalReply }]);
+    } catch (err: any) {
       console.error("Error:", err);
+      setMessages(prev => [...prev, { role: 'assistant', content: `خطأ: ${err.message}` }]);
     } finally {
-      setIsSending(false);
+      setLoading(false);
     }
-  }
+  };
 
-  function handleInputKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
-    if (e.key === "Enter") sendMessage();
-  }
+  const handleSaveMessage = (content: string) => {
+    if (!savedList.includes(content)) {
+      setSavedList(prev => [content, ...prev]);
+    }
+  };
 
   return (
-    <>
-      <button
-        onClick={() => setOpen(!open)}
-        aria-label="Open Madly assistant"
-        style={{
-          position: "fixed",
-          bottom: 16,
-          right: 16,
-          width: 58,
-          height: 58,
-          borderRadius: "50%",
-          border: "none",
-          cursor: "pointer",
-          background: "linear-gradient(90deg, #ff4fa3, #9b4ff0)",
-          color: "#fff",
-          fontSize: 24,
-          boxShadow: "0 10px 28px rgba(255,79,163,0.4)",
-          zIndex: 9999,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          transition: "transform .15s ease",
-        }}
-      >
-        {open ? "✕" : "💬"}
-      </button>
-
-      {open && (
-        <div
-          style={{
-            position: "fixed",
-            bottom: 84,
-            right: 16,
-            width: "420px",
-            height: "520px",
-            borderRadius: 20,
-            overflow: "hidden",
-            boxShadow: "0 20px 60px rgba(0,0,0,0.5)",
-            zIndex: 9998,
-          }}
-        >
-          <div className="madly-root" style={{ width: "100%", height: "100%", padding: 0 }}>
-            <div className="madly-chat-window madly-glass" style={{ width: "100%", height: "100%", display: "flex", flexDirection: "column" }}>
-              <div className="madly-chat-header">
-                <div className="madly-chat-title">
-                  <div className="madly-bot-avatar">🤖</div>
-                  <span>Madly</span>
-                </div>
-                <div className="madly-status">
-                  <span className="madly-pulse-dot" /> Online
-                </div>
+    <div className="madly-root">
+      {!isOpen ? (
+        <button className="madly-floating-btn" onClick={() => setIsOpen(true)}>
+          <img src={madlyImg} alt="Madly AI" className="madly-avatar-img" />
+        </button>
+      ) : (
+        <div className="madly-chat-window">
+          {/* Sidebar */}
+          <div className="madly-sidebar">
+            <div className="madly-brand">
+              <div className="madly-avatar">
+                <img src={madlyImg} alt="Madly AI" className="madly-avatar-img" />
               </div>
-
-              <div className="madly-chat-body" ref={chatBodyRef} style={{ flex: 1, maxHeight: "none" }}>
-                {messages.map((m) => (
-                  <div className={`madly-msg ${m.role === "user" ? "user" : "ai"}`} key={m.id}>
-                    <div className="madly-msg-avatar">{m.role === "user" ? "🧑" : "🤖"}</div>
-                    <div className="madly-bubble">
-                      {m.text}
-                      {m.imageDataUrl && <img src={m.imageDataUrl} alt="attached" />}
-                    </div>
-                  </div>
-                ))}
-
-                {isTyping && (
-                  <div className="madly-msg ai">
-                    <div className="madly-msg-avatar">🤖</div>
-                    <div className="madly-bubble madly-typing-dots">
-                      <span />
-                      <span />
-                      <span />
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              <div className="madly-chat-input-area">
-                <div className={`madly-img-preview-row ${selectedImageDataUrl ? "show" : ""}`}>
-                  {selectedImageDataUrl && <img src={selectedImageDataUrl} alt="preview" />}
-                  <button className="madly-img-preview-remove" onClick={removeImagePreview} title="إزالة / Remove">
-                    ✕
-                  </button>
-                </div>
-
-                <div className="madly-input-row">
-                  <input
-                    type="file"
-                    ref={fileInputRef}
-                    accept="image/*"
-                    style={{ display: "none" }}
-                    onChange={handleFileChange}
-                  />
-                  <button
-                    className="madly-icon-btn"
-                    onClick={() => fileInputRef.current?.click()}
-                    title="إرفاق صورة / Attach image"
-                  >
-                    📎
-                  </button>
-                  <input
-                    type="text"
-                    placeholder="اسأل أي شيء / Ask anything..."
-                    value={inputValue}
-                    onChange={(e) => setInputValue(e.target.value)}
-                    onKeyDown={handleInputKeyDown}
-                  />
-                  <button
-                    className="madly-icon-btn madly-lang-toggle-btn"
-                    onClick={toggleVoiceLang}
-                    title="لغة الإدخال الصوتي / Voice input language"
-                  >
-                    {voiceLang.startsWith("ar") ? "AR" : "EN"}
-                  </button>
-                  <button
-                    className={`madly-icon-btn madly-mic-btn ${recognizing ? "active recording" : ""}`}
-                    onClick={toggleMic}
-                    disabled={!micSupported}
-                    title="إدخال صوتي / Voice input"
-                  >
-                    🎤
-                  </button>
-                  <button className="madly-send-btn" onClick={sendMessage} disabled={isSending} title="إرسال / Send">
-                    ➤
-                  </button>
-                </div>
+              <div className="madly-brand-info">
+                <h3>Madly AI</h3>
+                <span>Engineering Mentor</span>
               </div>
             </div>
+
+            <div className="madly-nav-links">
+              <button className={activeTab === 'chat' ? 'active' : ''} onClick={() => setActiveTab('chat')}>
+                💬 New Chat
+              </button>
+              <button className={activeTab === 'history' ? 'active' : ''} onClick={() => setActiveTab('history')}>
+                ⏱️ History ({historyList.length})
+              </button>
+              <button className={activeTab === 'saved' ? 'active' : ''} onClick={() => setActiveTab('saved')}>
+                🔖 Saved ({savedList.length})
+              </button>
+              <button className={activeTab === 'settings' ? 'active' : ''} onClick={() => setActiveTab('settings')}>
+                ⚙️ Settings
+              </button>
+            </div>
+
+            <div className="madly-quick-actions-section">
+              <h4>Quick Actions</h4>
+              <button onClick={() => { setActiveTab('chat'); handleSend("Explain IoT network topologies"); }}>⚡ Explain IoT</button>
+              <button onClick={() => { setActiveTab('chat'); handleSend("Help me with Assembly 8086 lab code"); }}>💻 Assembly Lab</button>
+              <button onClick={() => { setActiveTab('chat'); handleSend("Explain Ohm's Law and KVL"); }}>🔌 Circuits Help</button>
+            </div>
+
+            <div className="madly-sidebar-footer">
+              <button className="madly-upgrade-btn">🚀 Virtual Hub</button>
+            </div>
+          </div>
+
+          {/* Main Content Area */}
+          <div className="madly-main-content">
+            <div className="madly-chat-header">
+              <div className="madly-chat-title">
+                <div className="madly-bot-avatar">
+                  <img src={madlyImg} alt="Madly AI" className="madly-avatar-img" />
+                </div>
+                <span>{activeTab === 'chat' ? 'Active Chat' : activeTab.toUpperCase() + ' SECTION'}</span>
+              </div>
+              <div className="madly-status">
+                <span className="madly-pulse-dot"></span>
+                <span>Online</span>
+                <button className="madly-close-btn" onClick={() => setIsOpen(false)}>✕</button>
+              </div>
+            </div>
+
+            {/* Dynamic Views based on Active Tab */}
+            {activeTab === 'chat' && (
+              <>
+                <div className="madly-chat-body">
+                  {messages.map((msg, idx) => (
+                    <div key={idx} className={`madly-msg ${msg.role === 'user' ? 'user' : 'ai'}`}>
+                      <div className="madly-msg-avatar">
+                        {msg.role === 'user' ? '👤' : <img src={madlyImg} alt="Madly AI" className="madly-avatar-img" />}
+                      </div>
+                      <div className="madly-bubble" style={{ position: 'relative' }}>
+                        {msg.content}
+                        {msg.role === 'assistant' && (
+                          <button 
+                            onClick={() => handleSaveMessage(msg.content)} 
+                            style={{ position: 'absolute', bottom: '5px', left: '10px', background: 'transparent', border: 'none', cursor: 'pointer', fontSize: '11px', color: '#ff69b4' }}
+                            title="Save message"
+                          >
+                            🔖 Save
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                  {loading && (
+                    <div className="madly-msg ai">
+                      <div className="madly-msg-avatar">
+                        <img src={madlyImg} alt="Madly AI" className="madly-avatar-img" />
+                      </div>
+                      <div className="madly-bubble">
+                        <div className="madly-typing-dots">
+                          <span></span><span></span><span></span>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                <div className="madly-chat-input-area">
+                  <div className="madly-input-row">
+                    <input
+                      type="text"
+                      value={input}
+                      onChange={e => setInput(e.target.value)}
+                      onKeyDown={e => e.key === 'Enter' && handleSend()}
+                      placeholder="Ask Madly anything about IoT, Assembly, Circuits..."
+                      disabled={loading}
+                    />
+                    <button className="madly-send-btn" onClick={() => handleSend()} disabled={loading}>
+                      ➤
+                    </button>
+                  </div>
+                </div>
+              </>
+            )}
+
+            {activeTab === 'history' && (
+              <div className="madly-chat-body" style={{ overflowY: 'auto' }}>
+                <h4 style={{ color: '#ff69b4', margin: '0 0 10px 0' }}>Chat History</h4>
+                {historyList.length === 0 ? (
+                  <p style={{ color: '#d6c6ff', fontSize: '13px' }}>No history yet. Start asking questions!</p>
+                ) : (
+                  historyList.map((item, idx) => (
+                    <div key={idx} style={{ background: 'rgba(255,255,255,0.03)', padding: '10px', borderRadius: '8px', marginBottom: '8px', fontSize: '13px', border: '1px solid rgba(204,153,255,0.1)' }}>
+                      💬 {item}
+                    </div>
+                  ))
+                )}
+              </div>
+            )}
+
+            {activeTab === 'saved' && (
+              <div className="madly-chat-body" style={{ overflowY: 'auto' }}>
+                <h4 style={{ color: '#ff69b4', margin: '0 0 10px 0' }}>Saved Messages</h4>
+                {savedList.length === 0 ? (
+                  <p style={{ color: '#d6c6ff', fontSize: '13px' }}>No saved messages yet. Click 'Save' on any AI response.</p>
+                ) : (
+                  savedList.map((item, idx) => (
+                    <div key={idx} style={{ background: 'rgba(255,255,255,0.03)', padding: '10px', borderRadius: '8px', marginBottom: '8px', fontSize: '13px', border: '1px solid rgba(204,153,255,0.1)' }}>
+                      🔖 {item}
+                    </div>
+                  ))
+                )}
+              </div>
+            )}
+
+            {activeTab === 'settings' && (
+              <div className="madly-chat-body" style={{ overflowY: 'auto' }}>
+                <h4 style={{ color: '#ff69b4', margin: '0 0 10px 0' }}>Widget Settings</h4>
+                <p style={{ color: '#d6c6ff', fontSize: '13px' }}>Model: Llama 3.1 8B Instant (Groq)</p>
+                <p style={{ color: '#d6c6ff', fontSize: '13px' }}>Language Mode: Auto (Arabic / English)</p>
+                <button 
+                  onClick={() => { setMessages([{ role: 'assistant', content: 'Chat reset. How can I help you?' }]); setHistoryList([]); }} 
+                  style={{ background: 'rgba(233, 30, 140, 0.2)', border: '1px solid #ff69b4', color: '#fff', padding: '8px 12px', borderRadius: '8px', cursor: 'pointer', marginTop: '10px' }}
+                >
+                  Clear Chat & History
+                </button>
+              </div>
+            )}
           </div>
         </div>
       )}
-    </>
+    </div>
   );
 }

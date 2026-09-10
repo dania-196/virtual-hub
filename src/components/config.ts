@@ -7,7 +7,7 @@
 // your own backend endpoint instead of calling Groq directly. See the note at the
 // bottom of this file for a minimal example.
 
-export const GROQ_API_KEY = "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";
+export const GROQ_API_KEY = import.meta.env.VITE_GROQ_API_KEY;
 
 export const GROQ_API_URL = "https://api.groq.com/openai/v1/chat/completions";
 

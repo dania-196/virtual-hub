@@ -1,1290 +1,530 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Virtual Hub | IoT & Embedded Lab</title>
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Fira+Code:wght@400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Tajawal:wght@400;500;700&display=swap');
 
 :root {
   --bg: #07080f;
   --panel: #0d1117;
   --card: #161b22;
   --border: #21262d;
-  --border-hover: #30363d;
   --accent: #ff69b4;
-  --accent2: #9b59b6;
-  --accent-glow: rgba(255,105,180,0.15);
+  --accent-glow: rgba(255,105,180,0.2);
   --green: #22c55e;
-  --blue: #3b82f6;
-  --yellow: #f59e0b;
   --red: #ef4444;
   --text: #e6edf3;
   --text-dim: #7d8590;
-  --pcb: #0d2137;
 }
 
-* { box-sizing: border-box; margin: 0; padding: 0; }
-body {
-  font-family: 'Inter', sans-serif;
-  background: var(--bg);
-  color: var(--text);
-  height: 100vh;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-}
+* { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Tajawal', sans-serif; }
+html, body { height: 100%; }
+body { background: var(--bg); color: var(--text); display: flex; flex-direction: column; overflow: hidden; }
+.main { min-height: 0; }
 
-/* ── Header ── */
-.header {
-  height: 52px;
-  background: var(--panel);
-  border-bottom: 1px solid var(--border);
-  display: flex;
-  align-items: center;
-  padding: 0 16px;
-  gap: 12px;
-  flex-shrink: 0;
-}
-.header-logo {
-  font-weight: 700;
-  font-size: 15px;
-  color: var(--accent);
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-.header-badge {
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: 20px;
-  padding: 3px 10px;
-  font-size: 11px;
-  color: var(--text-dim);
-  font-family: 'Fira Code', monospace;
-}
-.header-right {
-  margin-left: auto;
-  display: flex;
-  gap: 8px;
-  align-items: center;
-}
-.hbtn {
-  background: var(--card);
-  border: 1px solid var(--border);
-  color: var(--text);
-  padding: 5px 12px;
-  border-radius: 6px;
-  font-size: 12px;
-  cursor: pointer;
-  transition: border-color .2s;
-}
-.hbtn:hover { border-color: var(--accent); color: var(--accent); }
-.hbtn.run { background: var(--green); border-color: var(--green); color: #000; font-weight: 700; }
-.hbtn.run:hover { background: #16a34a; }
-.hbtn.stop { background: var(--red); border-color: var(--red); color: #fff; font-weight: 700; }
+/* Header */
+.header { height: 50px; background: var(--panel); border-bottom: 1px solid var(--border); display: flex; align-items: center; padding: 0 16px; gap: 12px; }
+.logo { font-weight: 700; color: var(--accent); font-size: 16px; display: flex; align-items: center; gap: 8px; }
+.controls { margin-right: auto; display: flex; gap: 8px; }
+.btn { background: var(--card); border: 1px solid var(--border); color: var(--text); padding: 5px 14px; border-radius: 6px; cursor: pointer; font-size: 13px; transition: .2s; }
+.btn:hover { border-color: var(--accent); color: var(--accent); }
+.btn.run { background: var(--green); color: #000; font-weight: 700; border-color: var(--green); }
+.btn.stop { background: var(--red); color: #fff; font-weight: 700; border-color: var(--red); }
+.btn.home { background: transparent; border: 1px solid var(--accent); color: var(--accent); font-weight: 600; }
+.btn.home:hover { background: var(--accent); color: #0a0015; box-shadow: 0 0 14px var(--accent-glow); }
 
-/* ── Tool strip ── */
-.toolstrip {
-  height: 40px;
-  background: var(--panel);
-  border-bottom: 1px solid var(--border);
-  display: flex;
-  align-items: center;
-  padding: 0 12px;
-  gap: 6px;
-  flex-shrink: 0;
-}
-.tool {
-  height: 28px;
-  padding: 0 10px;
-  border-radius: 6px;
-  border: 1px solid transparent;
-  background: transparent;
-  color: var(--text-dim);
-  font-size: 12px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  transition: all .15s;
-}
-.tool:hover { background: var(--card); color: var(--text); }
-.tool.active { background: var(--card); border-color: var(--accent); color: var(--accent); }
-.tool-sep { width: 1px; height: 20px; background: var(--border); margin: 0 2px; }
-.wire-palette { display: none; gap: 5px; align-items: center; padding: 0 6px; }
-.wire-palette.show { display: flex; }
-.wdot {
-  width: 16px; height: 16px; border-radius: 50%;
-  border: 2px solid transparent; cursor: pointer; transition: transform .15s;
-}
-.wdot:hover { transform: scale(1.2); }
-.wdot.active { border-color: #fff; box-shadow: 0 0 6px currentColor; }
+/* Toolstrip */
+.toolstrip { height: 38px; background: var(--panel); border-bottom: 1px solid var(--border); display: flex; align-items: center; padding: 0 16px; gap: 10px; font-size: 12px; }
+.color-dot { width: 16px; height: 16px; border-radius: 50%; cursor: pointer; border: 2px solid transparent; transition: transform .15s ease, border-color .15s ease; }
+.color-dot:hover { transform: scale(1.12); }
+.color-dot.active { border-color: #fff; transform: scale(1.15); box-shadow: 0 0 8px rgba(255,255,255,.35); }
 
-/* ── Main layout ── */
-.layout {
-  flex: 1;
-  display: grid;
-  grid-template-columns: 200px 1fr 300px;
-  min-height: 0;
-}
+/* Layout */
+.main { flex: 1; display: grid; grid-template-columns: 220px 1fr 360px; min-height: 0; }
 
-/* ── Sidebar ── */
-.sidebar {
-  background: var(--panel);
-  border-right: 1px solid var(--border);
-  display: flex;
-  flex-direction: column;
-  overflow-y: auto;
-}
-.sidebar-section {
-  padding: 10px;
-  border-bottom: 1px solid var(--border);
-}
-.sidebar-title {
-  font-size: 10px;
-  font-weight: 600;
-  color: var(--text-dim);
-  text-transform: uppercase;
-  letter-spacing: .8px;
-  margin-bottom: 8px;
-}
-.comp-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
-.comp-card {
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 10px 6px;
-  text-align: center;
-  cursor: grab;
-  transition: all .2s;
-  user-select: none;
-}
-.comp-card:hover {
-  border-color: var(--accent);
-  box-shadow: 0 0 12px var(--accent-glow);
-  transform: translateY(-1px);
-}
-.comp-card:active { cursor: grabbing; }
-.comp-icon { font-size: 24px; margin-bottom: 4px; line-height: 1; }
-.comp-name { font-size: 10px; font-weight: 600; color: var(--text); }
-.comp-sub { font-size: 9px; color: var(--text-dim); margin-top: 1px; }
+/* Sidebar */
+.sidebar { background: var(--panel); border-left: 1px solid var(--border); padding: 12px; overflow-y: auto; }
+.stitle { font-size: 11px; font-weight: 700; color: var(--text-dim); margin-bottom: 10px; text-transform: uppercase; }
+.grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 16px; }
+.item { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 10px 6px; text-align: center; cursor: grab; user-select: none; font-size: 12px; }
+.item:hover { border-color: var(--accent); box-shadow: 0 0 10px var(--accent-glow); }
 
-/* ── Canvas ── */
-.canvas-wrap {
-  position: relative;
-  background: #060910;
-  background-image:
-    radial-gradient(rgba(255,105,180,.04) 1px, transparent 1px),
-    radial-gradient(rgba(255,105,180,.02) 1px, transparent 1px);
-  background-size: 24px 24px, 12px 12px;
-  overflow: hidden;
-}
-.canvas-svg {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  pointer-events: none;
-  z-index: 5;
-}
-.canvas-surface {
-  position: absolute;
-  inset: 0;
-  z-index: 10;
-}
-.canvas-hint {
-  position: absolute;
-  top: 50%; left: 50%;
-  transform: translate(-50%, -50%);
-  text-align: center;
-  color: var(--text-dim);
-  font-size: 13px;
-  line-height: 2;
-  pointer-events: none;
-}
+/* Canvas */
+.canvas { position: relative; background: #05070c; overflow: hidden; background-image: radial-gradient(#1e293b 1px, transparent 1px); background-size: 20px 20px; }
+.svg-layer { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 5; }
+.wire-path { pointer-events: stroke; cursor: pointer; stroke-linecap: round; }
+.wire-path:hover { stroke-width: 6px; }
 
-/* ── Components on canvas ── */
-.node {
-  position: absolute;
-  user-select: none;
-  z-index: 20;
-  pointer-events: auto;
-}
-
-/* Arduino Uno — realistic PCB */
-.arduino-uno {
-  width: 220px;
-  height: 145px;
-  background: linear-gradient(150deg, #0d3657 0%, var(--pcb) 50%, #061828 100%);
-  border-radius: 6px;
-  border: 1px solid #1a4a6a;
-  box-shadow: 0 8px 24px rgba(0,0,0,.6), inset 0 1px 0 rgba(255,255,255,.06);
-}
-.ard-label {
-  position: absolute;
-  top: 7px; left: 50%;
-  transform: translateX(-50%);
-  font-family: 'Fira Code', monospace;
-  font-size: 7px;
-  color: rgba(255,255,255,.3);
-  letter-spacing: 2px;
-  white-space: nowrap;
-}
-.ard-ic {
-  position: absolute;
-  top: 50%; left: 50%;
-  transform: translate(-50%, -50%);
-  width: 68px; height: 52px;
-  background: #080d14;
-  border-radius: 3px;
-  border: 1px solid #1e293b;
-  display: flex; align-items: center; justify-content: center;
-}
-.ard-ic-label { font-family: 'Fira Code', monospace; font-size: 7px; color: rgba(255,255,255,.25); }
-.ard-usb {
-  position: absolute;
-  top: 50%; left: -12px;
-  transform: translateY(-50%);
-  width: 16px; height: 32px;
-  background: linear-gradient(90deg,#2d3748,#4a5568,#718096,#4a5568);
-  border-radius: 3px 0 0 3px;
-}
-.ard-jack {
-  position: absolute;
-  top: 12px; left: -8px;
-  width: 12px; height: 16px;
-  background: linear-gradient(90deg,#1a202c,#2d3748);
-  border-radius: 3px 0 0 3px;
-}
-.ard-led {
-  position: absolute;
-  width: 5px; height: 5px;
-  border-radius: 50%;
-  background: #143825;
-  box-shadow: inset 0 1px 2px rgba(0,0,0,.5);
-  transition: all .1s;
-}
-.ard-led.on {
-  background: var(--green);
-  box-shadow: 0 0 8px var(--green), 0 0 16px rgba(34,197,94,.4);
-}
-.ard-led.tx { background: #4d3d14; }
-.ard-led.tx.on { background: var(--yellow); box-shadow: 0 0 8px var(--yellow); }
-.ard-led#aLedOn { top: 10px; left: 50%; transform: translateX(-50%); }
-.ard-led#aLedTx { top: 10px; left: calc(50% + 18px); }
-.ard-led#aLedRx { top: 10px; left: calc(50% - 22px); }
-
-/* Pin rows */
-.pin-row {
-  position: absolute;
-  display: flex;
-  gap: 2px;
-  background: #080d14;
-  padding: 2px;
-  border-radius: 2px;
-}
-.pin-row.digital { top: 38px; right: 6px; flex-direction: column; }
-.pin-row.analog  { bottom: 10px; right: 6px; flex-direction: column; }
-.pin-row.power   { top: 38px; left: 22px; flex-direction: column; }
+/* Component Nodes */
+.node { position: absolute; user-select: none; z-index: 10; }
 .pin {
-  width: 8px; height: 8px;
+  width: 8px;
+  height: 8px;
   border-radius: 50%;
+  background: transparent;
+  border: none;
   cursor: pointer;
-  background: linear-gradient(135deg,#94a3b8,#cbd5e1,#64748b);
-  box-shadow: inset 0 1px rgba(255,255,255,.4), 0 1px 2px rgba(0,0,0,.4);
-  transition: transform .1s;
+  display: inline-block;
+  z-index: 12;
+  transition: 0.15s;
   position: relative;
 }
-.pin:hover { transform: scale(1.4); z-index: 50; }
-.pin::after {
-  content: attr(data-label);
-  position: absolute;
-  right: 12px; top: 50%;
-  transform: translateY(-50%);
-  font-size: 7px;
-  color: rgba(255,255,255,.6);
-  white-space: nowrap;
-  font-family: 'Fira Code', monospace;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity .15s;
+.pin:hover {
+  background: rgba(255, 105, 180, 0.55) !important;
+  box-shadow: 0 0 8px var(--accent);
 }
-.pin:hover::after { opacity: 1; }
-.pin.pwr { background: linear-gradient(135deg,#dc2626,#ef4444); }
-.pin.gnd { background: linear-gradient(135deg,#374151,#1f2937); }
-.pin.analog-p { background: linear-gradient(135deg,#1d4ed8,#3b82f6); }
 
-/* Breadboard */
-.breadboard {
-  width: 260px; height: 160px;
+/* تولتيب مخصص بدل تولتيب المتصفح الافتراضي — بيقرأ نفس نص title تلقائياً */
+.pin[title]:hover::after {
+  content: attr(title);
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: #161b22;
+  color: #fff;
+  border: 1px solid var(--accent);
   border-radius: 6px;
-  border: 1px solid #9aa3ad;
-  box-shadow: 0 6px 18px rgba(0,0,0,.4), inset 0 1px rgba(255,255,255,.7);
-  background:
-    linear-gradient(90deg,rgba(0,0,0,.03) 1px,transparent 1px),
-    linear-gradient(rgba(0,0,0,.03) 1px,transparent 1px),
-    linear-gradient(170deg, #e9ecef, #ced4da, #e2e8f0);
-  background-size: 10px 10px, 10px 10px, 100% 100%;
-  position: relative;
+  padding: 4px 9px;
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+  box-shadow: 0 4px 14px rgba(0,0,0,.5), 0 0 10px var(--accent-glow);
+  z-index: 50;
+  pointer-events: none;
+  animation: pinTooltipIn .12s ease-out;
 }
-.bb-rail-top, .bb-rail-bot {
-  position: absolute;
-  left: 10px; right: 10px;
-  height: 4px;
-  border-radius: 2px;
-}
-.bb-rail-top { top: 7px; background: #c0392b; }
-.bb-rail-bot { bottom: 7px; background: #2980b9; }
-.bb-holes {
-  position: absolute;
-  top: 18px; bottom: 18px;
-  left: 10px; right: 10px;
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-}
-.bb-row { display: flex; gap: 3px; justify-content: space-between; }
-.bb-hole {
-  width: 7px; height: 7px;
-  border-radius: 50%;
-  background: #1e2835;
-  border: 1px solid #111;
-  box-shadow: inset 0 1px 2px rgba(0,0,0,.7);
-  cursor: pointer;
-  transition: all .12s;
-}
-.bb-hole:hover {
-  transform: scale(1.4);
-  box-shadow: 0 0 0 2px rgba(255,105,180,.4);
-}
-.bb-hole.connected { background: #0e4429; box-shadow: 0 0 4px rgba(34,197,94,.4); }
-
-/* LED */
-.led-comp {
-  width: 22px; height: 38px;
-  display: flex; flex-direction: column; align-items: center;
-}
-.led-body {
-  width: 14px; height: 14px;
-  border-radius: 50%;
-  box-shadow: inset 0 2px 4px rgba(0,0,0,.5);
-  transition: all .15s;
-  position: relative;
-}
-.led-body::after {
+.pin[title]:hover::before {
   content: '';
   position: absolute;
-  top: 2px; left: 4px;
-  width: 5px; height: 3px;
-  background: rgba(255,255,255,.3);
-  border-radius: 50%;
-  transform: rotate(-30deg);
-}
-.led-legs { display: flex; gap: 5px; margin-top: 2px; }
-.led-leg {
-  width: 2px; height: 20px;
-  border-radius: 1px;
-  background: linear-gradient(180deg,#94a3b8,#64748b);
-}
-.led-leg.anode { background: linear-gradient(180deg,#f87171,#ef4444); }
-
-/* Resistor */
-.resistor-comp {
-  width: 48px; height: 14px;
-  display: flex; align-items: center;
-}
-.res-body {
-  flex: 1;
-  height: 12px;
-  border-radius: 6px;
-  background: linear-gradient(180deg,#c8a270,#a0724a,#c8a270);
-  display: flex; align-items: center; justify-content: center; gap: 3px;
-  box-shadow: inset 0 1px rgba(255,255,255,.2), 0 1px 3px rgba(0,0,0,.4);
-}
-.res-band { width: 3px; height: 9px; border-radius: 1px; }
-.res-leg {
-  width: 8px; height: 2px;
-  background: linear-gradient(90deg,#94a3b8,#cbd5e1);
-}
-
-/* ── Right panel: Code + Serial ── */
-.right-panel {
-  background: var(--panel);
-  border-left: 1px solid var(--border);
-  display: flex;
-  flex-direction: column;
-}
-.rpanel-tabs {
-  display: flex;
-  border-bottom: 1px solid var(--border);
-}
-.rtab {
-  flex: 1;
-  padding: 8px;
-  text-align: center;
-  font-size: 11px;
-  font-weight: 600;
-  color: var(--text-dim);
-  cursor: pointer;
-  border-bottom: 2px solid transparent;
-  transition: all .15s;
-}
-.rtab.active { color: var(--accent); border-bottom-color: var(--accent); }
-
-.code-section, .serial-section { display: flex; flex-direction: column; flex: 1; }
-.code-section.hidden, .serial-section.hidden { display: none; }
-
-.code-toolbar {
-  display: flex;
-  gap: 6px;
-  padding: 8px;
-  border-bottom: 1px solid var(--border);
-}
-.cbtn {
-  padding: 4px 10px;
-  border-radius: 5px;
-  font-size: 11px;
-  font-weight: 600;
-  cursor: pointer;
-  border: 1px solid var(--border);
-  background: var(--card);
-  color: var(--text);
-  transition: all .15s;
-}
-.cbtn:hover { border-color: var(--accent); }
-.cbtn.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
-.cbtn.primary:hover { background: #e91e8c; }
-.cbtn.danger { background: var(--red); border-color: var(--red); color: #fff; }
-
-.code-area {
-  flex: 1;
-  padding: 10px;
-  background: #04060a;
-  color: #e2e8f0;
-  font-family: 'Fira Code', monospace;
-  font-size: 12px;
-  line-height: 1.6;
-  border: none;
-  outline: none;
-  resize: none;
-  border-bottom: 1px solid var(--border);
-}
-.code-area:focus { box-shadow: inset 2px 0 0 var(--accent); }
-
-.serial-out {
-  flex: 1;
-  background: #030507;
-  padding: 10px;
-  font-family: 'Fira Code', monospace;
-  font-size: 11px;
-  overflow-y: auto;
-  border-bottom: 1px solid var(--border);
-}
-.serial-line { padding: 1px 0; }
-.s-info { color: #60a5fa; }
-.s-tx { color: var(--green); }
-.s-err { color: var(--red); }
-.s-time { color: #475569; font-size: 10px; margin-right: 6px; }
-
-.serial-input-row {
-  display: flex;
-  gap: 6px;
-  padding: 8px;
-  background: var(--panel);
-}
-.serial-input {
-  flex: 1;
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: 5px;
-  padding: 5px 8px;
-  color: var(--text);
-  font-family: 'Fira Code', monospace;
-  font-size: 11px;
-  outline: none;
-}
-.serial-input:focus { border-color: var(--accent); }
-
-/* ── Compile overlay ── */
-.overlay {
-  position: fixed; inset: 0;
-  background: rgba(0,0,0,.7);
-  display: flex; align-items: center; justify-content: center;
-  z-index: 999;
-  backdrop-filter: blur(4px);
-  display: none;
-}
-.overlay.show { display: flex; }
-.overlay-box {
-  background: var(--panel);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 28px;
-  width: 300px;
-  text-align: center;
-}
-.spinner {
-  width: 40px; height: 40px;
-  border: 3px solid var(--border);
+  bottom: calc(100% + 3px);
+  left: 50%;
+  transform: translateX(-50%);
+  border: 5px solid transparent;
   border-top-color: var(--accent);
-  border-radius: 50%;
-  animation: spin .7s linear infinite;
-  margin: 0 auto 12px;
+  z-index: 50;
+  pointer-events: none;
 }
-@keyframes spin { to { transform: rotate(360deg); } }
-.progress-bar {
-  height: 3px;
-  background: var(--card);
-  border-radius: 2px;
-  margin-top: 12px;
-  overflow: hidden;
-}
-.progress-fill {
-  height: 100%;
-  background: linear-gradient(90deg, var(--accent), var(--accent2));
-  border-radius: 2px;
-  transition: width .3s;
-  width: 0%;
+@keyframes pinTooltipIn {
+  from { opacity: 0; transform: translateX(-50%) translateY(3px); }
+  to   { opacity: 1; transform: translateX(-50%) translateY(0); }
 }
 
-/* ── Toast ── */
-.toast {
-  position: fixed;
-  bottom: 16px; left: 50%;
-  transform: translateX(-50%) translateY(60px);
-  background: var(--card);
-  border: 1px solid var(--accent);
-  color: var(--text);
-  padding: 8px 16px;
-  border-radius: 8px;
-  font-size: 12px;
-  z-index: 1000;
-  transition: transform .25s cubic-bezier(.34,1.56,.64,1);
-  box-shadow: 0 8px 24px rgba(0,0,0,.4);
-}
-.toast.show { transform: translateX(-50%) translateY(0); }
-
-/* ── Context menu ── */
-.ctx {
-  position: fixed;
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 4px;
-  z-index: 500;
-  box-shadow: 0 8px 24px rgba(0,0,0,.5);
-  display: none;
-  min-width: 130px;
-}
-.ctx.show { display: block; }
-.ctx-item {
-  padding: 7px 10px;
-  border-radius: 5px;
-  cursor: pointer;
-  font-size: 12px;
-  transition: background .12s;
-}
-.ctx-item:hover { background: var(--border); }
-.ctx-item.del { color: var(--red); }
+/* Code Editor & Serial Panel (Fixed LTR) */
+.panel-right { background: var(--panel); border-right: 1px solid var(--border); display: flex; flex-direction: column; }
+.tabs { display: flex; border-bottom: 1px solid var(--border); }
+.tab { flex: 1; padding: 8px; text-align: center; font-size: 12px; cursor: pointer; color: var(--text-dim); }
+.tab.active { color: var(--accent); border-bottom: 2px solid var(--accent); background: var(--card); }
+.code-editor { flex: 1; background: #030407; color: #a5d6ff; font-family: 'Fira Code', monospace; font-size: 12px; padding: 12px; border: none; outline: none; resize: none; line-height: 1.5; dir: ltr; text-align: left; }
+.console { flex: 1; background: #020305; padding: 12px; font-family: 'Fira Code', monospace; font-size: 11px; overflow-y: auto; dir: ltr; text-align: left; color: #4ade80; }
 </style>
 </head>
 <body>
 
-<!-- Header -->
 <div class="header">
-  <div class="header-logo">
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-      <rect x="2" y="7" width="20" height="14" rx="2"/>
-      <path d="M16 3l-4 4-4-4"/>
-    </svg>
-    Virtual Hub — IoT Lab
-  </div>
-  <div class="header-badge">Arduino Uno R3 Simulator</div>
-  <div class="header-right">
-    <button class="hbtn" onclick="setTool('select')">🖱 Select</button>
-    <button class="hbtn" onclick="setTool('wire')">🔌 Wire</button>
-    <button class="hbtn" onclick="setTool('delete')">🗑 Delete</button>
-    <button class="hbtn run" onclick="compileRun()">▶ Run</button>
-    <button class="hbtn stop" onclick="stopSim()">■ Stop</button>
-    <button class="hbtn" onclick="clearCanvas()">Clear</button>
+  <div class="logo">⚡ Virtual Hub - IoT Simulator</div>
+  <div class="controls">
+    <button class="btn home" onclick="goToDashboard()">🏠 الرئيسية</button>
+    <button class="btn" onclick="setMode('select')">🖱 اختيار وتحريك</button>
+    <button class="btn" onclick="setMode('wire')">🔌 توصيل سلك</button>
+    <button class="btn run" onclick="runSimulation()">▶ تشغيل المحاكاة</button>
+    <button class="btn stop" onclick="stopSimulation()">■ إيقاف</button>
   </div>
 </div>
 
-<!-- Wire palette strip -->
 <div class="toolstrip">
-  <span style="font-size:11px;color:var(--text-dim);">Wire color:</span>
-  <div id="wirePalette" class="wire-palette show">
-    <div class="wdot active" style="background:#ef4444" data-c="red" onclick="setWireColor('red',this)"></div>
-    <div class="wdot" style="background:#1f2937" data-c="black" onclick="setWireColor('black',this)"></div>
-    <div class="wdot" style="background:#3b82f6" data-c="blue" onclick="setWireColor('blue',this)"></div>
-    <div class="wdot" style="background:#22c55e" data-c="green" onclick="setWireColor('green',this)"></div>
-    <div class="wdot" style="background:#f59e0b" data-c="yellow" onclick="setWireColor('yellow',this)"></div>
-    <div class="wdot" style="background:#f1f5f9" data-c="white" onclick="setWireColor('white',this)"></div>
-  </div>
-  <div class="tool-sep"></div>
-  <span id="modeLabel" style="font-size:11px;color:var(--text-dim);">Mode: Select</span>
-  <div class="tool-sep"></div>
-  <span id="statsLabel" style="font-size:11px;color:var(--text-dim);">Components: 0 | Wires: 0</span>
+  <span>لون السلك:</span>
+  <div class="color-dot active" style="background:#ef4444" onclick="setWireColor('#ef4444', this)" title="أحمر"></div>
+  <div class="color-dot" style="background:#3b82f6" onclick="setWireColor('#3b82f6', this)" title="أزرق"></div>
+  <div class="color-dot" style="background:#22c55e" onclick="setWireColor('#22c55e', this)" title="أخضر"></div>
+  <div class="color-dot" style="background:#f59e0b" onclick="setWireColor('#f59e0b', this)" title="برتقالي"></div>
+  <div class="color-dot" style="background:#333333" onclick="setWireColor('#333333', this)" title="أسود"></div>
+  <span id="statusLabel" style="margin-right:auto; color:var(--text-dim)">الوضع: اختيار وتحريك</span>
 </div>
 
-<!-- Main -->
-<div class="layout">
-
+<div class="main">
   <!-- Sidebar -->
   <div class="sidebar">
-    <div class="sidebar-section">
-      <div class="sidebar-title">Microcontrollers</div>
-      <div class="comp-grid">
-        <div class="comp-card" draggable="true" data-type="arduino">
-          <div class="comp-icon">🟦</div>
-          <div class="comp-name">Arduino</div>
-          <div class="comp-sub">Uno R3</div>
-        </div>
-      </div>
+    <div class="stitle">المتحكمات واللوحات</div>
+    <div class="grid">
+      <div class="item" draggable="true" ondragstart="onDragStart(event, 'arduino')">🟦 Arduino Uno</div>
+      <div class="item" draggable="true" ondragstart="onDragStart(event, 'breadboard')">🟩 Breadboard</div>
     </div>
-    <div class="sidebar-section">
-      <div class="sidebar-title">Prototyping</div>
-      <div class="comp-grid">
-        <div class="comp-card" draggable="true" data-type="breadboard">
-          <div class="comp-icon">🟩</div>
-          <div class="comp-name">Breadboard</div>
-          <div class="comp-sub">400 pts</div>
-        </div>
-      </div>
-    </div>
-    <div class="sidebar-section">
-      <div class="sidebar-title">LEDs</div>
-      <div class="comp-grid">
-        <div class="comp-card" draggable="true" data-type="led-red">
-          <div class="comp-icon" style="color:#ef4444">●</div>
-          <div class="comp-name">Red LED</div>
-          <div class="comp-sub">5mm 20mA</div>
-        </div>
-        <div class="comp-card" draggable="true" data-type="led-green">
-          <div class="comp-icon" style="color:#22c55e">●</div>
-          <div class="comp-name">Green LED</div>
-          <div class="comp-sub">5mm 20mA</div>
-        </div>
-        <div class="comp-card" draggable="true" data-type="led-blue">
-          <div class="comp-icon" style="color:#3b82f6">●</div>
-          <div class="comp-name">Blue LED</div>
-          <div class="comp-sub">5mm 20mA</div>
-        </div>
-        <div class="comp-card" draggable="true" data-type="led-yellow">
-          <div class="comp-icon" style="color:#f59e0b">●</div>
-          <div class="comp-name">Yellow LED</div>
-          <div class="comp-sub">5mm 20mA</div>
-        </div>
-      </div>
-    </div>
-    <div class="sidebar-section">
-      <div class="sidebar-title">Passives</div>
-      <div class="comp-grid">
-        <div class="comp-card" draggable="true" data-type="resistor">
-          <div class="comp-icon">⚡</div>
-          <div class="comp-name">Resistor</div>
-          <div class="comp-sub">220Ω</div>
-        </div>
-      </div>
+    <div class="stitle">الحساسات والمخرجات</div>
+    <div class="grid">
+      <div class="item" draggable="true" ondragstart="onDragStart(event, 'ultrasonic')">📡 Ultrasonic</div>
+      <div class="item" draggable="true" ondragstart="onDragStart(event, 'pot')">🎛 Potentiometer</div>
+      <div class="item" draggable="true" ondragstart="onDragStart(event, 'led')">🔴 Red LED</div>
+      <div class="item" draggable="true" ondragstart="onDragStart(event, 'buzzer')">🔊 Buzzer</div>
     </div>
   </div>
 
-  <!-- Canvas -->
-  <div class="canvas-wrap" id="canvas">
-    <svg class="canvas-svg" id="wireSvg">
-      <defs>
-        <filter id="glow">
-          <feGaussianBlur stdDeviation="2" result="b"/>
-          <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
-        </filter>
-      </defs>
-      <g id="wireLayer"></g>
-      <path id="tempWire" fill="none" stroke-width="2.5"
-            stroke-dasharray="6 4" opacity=".7" style="display:none"/>
-    </svg>
-    <div class="canvas-surface" id="surface"></div>
-    <div class="canvas-hint" id="hint">
-      🖥️ Drag components from the sidebar<br>
-      <span style="font-size:11px;color:#4a5568">Use Wire tool to connect pins • Right-click to delete</span>
-    </div>
+  <!-- Canvas Surface -->
+  <div class="canvas" id="canvas" ondragover="event.preventDefault()" ondrop="onDrop(event)">
+    <svg class="svg-layer" id="svgLayer"></svg>
+    <div id="surface"></div>
   </div>
 
-  <!-- Right panel -->
-  <div class="right-panel">
-    <div class="rpanel-tabs">
-      <div class="rtab active" onclick="switchTab('code')">Code</div>
-      <div class="rtab" onclick="switchTab('serial')">Serial Monitor</div>
+  <!-- Right Code/Serial Panel -->
+  <div class="panel-right">
+    <div class="tabs">
+      <div class="tab active" onclick="showTab('code')">كود أردوينو (C++)</div>
+      <div class="tab" onclick="showTab('serial')">الشاشة التسلسلية (Serial)</div>
     </div>
-
-    <div class="code-section" id="codeSection">
-      <div class="code-toolbar">
-        <button class="cbtn primary" onclick="compileRun()">▶ Run</button>
-        <button class="cbtn danger" onclick="stopSim()">■ Stop</button>
-        <button class="cbtn" onclick="document.getElementById('codeArea').value=''">Clear</button>
-      </div>
-      <textarea class="code-area" id="codeArea" spellcheck="false">// LED Blink — Virtual Hub IoT Lab
-// Connect LED anode to D13, cathode to GND
-
+    <textarea id="codeArea" class="code-editor" spellcheck="false" dir="ltr">
 void setup() {
-  pinMode(13, OUTPUT);
+  pinMode(9, OUTPUT);
+  pinMode(8, OUTPUT);
   Serial.begin(9600);
-  Serial.println("Virtual Hub ready!");
 }
 
 void loop() {
-  digitalWrite(13, HIGH);
-  Serial.println("LED ON  ✓");
-  delay(1000);
-  digitalWrite(13, LOW);
-  Serial.println("LED OFF");
-  delay(1000);
+  int potValue = analogRead(A0);
+  int dist = getUltrasonicDistance();
+
+  Serial.print("Potentiometer: ");
+  Serial.print(potValue);
+  Serial.print(" | Distance: ");
+  Serial.println(dist);
+
+  if (dist < 30 || potValue > 500) {
+    digitalWrite(9, HIGH); // LED ON
+    digitalWrite(8, HIGH); // Buzzer ON
+  } else {
+    digitalWrite(9, LOW);  // LED OFF
+    digitalWrite(8, LOW);  // Buzzer OFF
+  }
+  delay(500);
 }
-</textarea>
-    </div>
-
-    <div class="serial-section hidden" id="serialSection">
-      <div style="padding:8px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center">
-        <span style="font-size:11px;font-weight:600;color:var(--text-dim)">9600 baud</span>
-        <button class="cbtn" onclick="document.getElementById('serialOut').innerHTML=''">Clear</button>
-      </div>
-      <div class="serial-out" id="serialOut">
-        <div class="serial-line s-info"><span class="s-time">[00:00:00]</span>Serial Monitor — 9600 baud</div>
-        <div class="serial-line s-info"><span class="s-time">[00:00:00]</span>Press Run to start simulation</div>
-      </div>
-      <div class="serial-input-row">
-        <input class="serial-input" id="serialInput" placeholder="Send command..." onkeydown="if(event.key==='Enter')sendSerial()">
-        <button class="cbtn primary" onclick="sendSerial()">Send</button>
-      </div>
+    </textarea>
+    <div id="serialConsole" class="console" style="display:none;" dir="ltr">
+      [System] Serial Monitor Initialized...<br>
     </div>
   </div>
-</div>
-
-<!-- Compile overlay -->
-<div class="overlay" id="overlay">
-  <div class="overlay-box">
-    <div class="spinner"></div>
-    <div style="font-weight:700;font-size:14px">Compiling...</div>
-    <div style="font-size:11px;color:var(--text-dim);margin-top:6px" id="compileStatus">Initializing avr-gcc</div>
-    <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
-  </div>
-</div>
-
-<!-- Toast -->
-<div class="toast" id="toast"></div>
-
-<!-- Context menu -->
-<div class="ctx" id="ctx">
-  <div class="ctx-item" onclick="ctxAction('delete')">🗑 Remove component</div>
-  <div class="ctx-item" onclick="ctxAction('rotate')">↻ Rotate 90°</div>
-  <div class="ctx-item del" onclick="ctxAction('deleteWire')">✕ Delete wire</div>
 </div>
 
 <script>
-// ═══════════════════════════════════════
-//  STATE
-// ═══════════════════════════════════════
-let tool = 'select';
-let wireColor = 'red';
-let comps = [];
-let wires = [];
-let uid = 1;
-let dragging = null, dOff = {x:0,y:0};
-let wireFrom = null, isWiring = false;
-let ctxComp = null, ctxWireIdx = -1;
-let simRunning = false, simTimer = null;
+let mode = 'select';
+let currentColor = '#ef4444';
+let comps = [], wires = [];
+let activeWireStart = null;
+let simInterval = null;
+let audioCtx = null;
 
-const WIRE_COLORS = {
-  red:'#ef4444', black:'#374151', blue:'#3b82f6',
-  green:'#22c55e', yellow:'#f59e0b', white:'#f1f5f9'
-};
-
-const canvas = document.getElementById('canvas');
-const surface = document.getElementById('surface');
-const wireSvg = document.getElementById('wireSvg');
-const wireLayer = document.getElementById('wireLayer');
-const tempWire = document.getElementById('tempWire');
-
-// ═══════════════════════════════════════
-//  INIT
-// ═══════════════════════════════════════
-window.addEventListener('DOMContentLoaded', () => {
-  resizeSvg();
-  window.addEventListener('resize', resizeSvg);
-
-  // Palette drag
-  document.querySelectorAll('.comp-card').forEach(el => {
-    el.addEventListener('dragstart', e => {
-      e.dataTransfer.setData('type', el.dataset.type);
-      e.dataTransfer.effectAllowed = 'copy';
-    });
-  });
-
-  canvas.addEventListener('dragover', e => { e.preventDefault(); e.dataTransfer.dropEffect = 'copy'; });
-  canvas.addEventListener('drop', onDrop);
-
-  document.addEventListener('mousemove', onMouseMove);
-  document.addEventListener('mouseup', onMouseUp);
-  document.addEventListener('click', () => closeCtx());
-
-  // Place initial components
-  addComp('arduino', 50, 30);
-  addComp('breadboard', 320, 50);
-});
-
-function resizeSvg() {
-  const r = canvas.getBoundingClientRect();
-  wireSvg.setAttribute('width', r.width);
-  wireSvg.setAttribute('height', r.height);
+// زر الرجوع للداشبورد (dashboard2.html بنفس مستوى مجلد public، وهاد الملف جوا public/simulation)
+function goToDashboard() {
+  location.href = '../dashboard2.html';
 }
 
-// ═══════════════════════════════════════
-//  TOOLS
-// ═══════════════════════════════════════
-function setTool(t) {
-  tool = t;
-  document.getElementById('modeLabel').textContent = 'Mode: ' + t.charAt(0).toUpperCase() + t.slice(1);
-  canvas.style.cursor = t === 'wire' ? 'crosshair' : t === 'delete' ? 'not-allowed' : 'default';
-  if(t !== 'wire') { tempWire.style.display = 'none'; wireFrom = null; isWiring = false; }
+function setMode(m) {
+  mode = m;
+  document.getElementById('statusLabel').innerText = 'الوضع: ' + (m === 'select' ? 'اختيار وتحريك' : 'توصيل أسلاك');
 }
 
 function setWireColor(c, el) {
-  wireColor = c;
-  document.querySelectorAll('.wdot').forEach(d => d.classList.remove('active'));
+  currentColor = c;
+  document.querySelectorAll('.color-dot').forEach(d => d.classList.remove('active'));
   el.classList.add('active');
-  tempWire.setAttribute('stroke', WIRE_COLORS[c]);
 }
 
-// ═══════════════════════════════════════
-//  COMPONENTS
-// ═══════════════════════════════════════
-function addComp(type, x, y) {
-  const id = 'c' + (uid++);
-  const comp = { id, type, x, y, rot: 0, el: null, pins: [] };
-
-  let el;
-  if (type === 'arduino')       el = makeArduino(comp);
-  else if (type === 'breadboard') el = makeBreadboard(comp);
-  else if (type.startsWith('led-')) el = makeLED(comp, type.split('-')[1]);
-  else if (type === 'resistor') el = makeResistor(comp);
-
-  if (!el) return;
-  el.style.left = x + 'px';
-  el.style.top  = y + 'px';
-  el.dataset.id  = id;
-  el.className += ' node';
-  surface.appendChild(el);
-  comp.el = el;
-  comps.push(comp);
-
-  bindComp(comp);
-  document.getElementById('hint').style.display = 'none';
-  updateStats();
-}
-
-function makeArduino(comp) {
-  const el = document.createElement('div');
-  el.className = 'arduino-uno';
-  el.innerHTML = `
-    <div class="ard-label">ARDUINO UNO R3</div>
-    <div class="ard-usb"></div>
-    <div class="ard-jack"></div>
-    <div class="ard-led" id="aLedOn"></div>
-    <div class="ard-led tx" id="aLedTx"></div>
-    <div class="ard-led tx" id="aLedRx" style="left:calc(50% - 22px)"></div>
-    <div class="ard-ic"><span class="ard-ic-label">ATMEGA328P</span></div>
-    <div class="pin-row digital">${
-      [...Array(14)].map((_,i) =>
-        `<div class="pin" data-pin="D${i}" data-label="D${i}"></div>`).join('')
-    }</div>
-    <div class="pin-row analog">${
-      [...Array(6)].map((_,i) =>
-        `<div class="pin analog-p" data-pin="A${i}" data-label="A${i}"></div>`).join('')
-    }</div>
-    <div class="pin-row power">
-      <div class="pin pwr" data-pin="5V"  data-label="5V"></div>
-      <div class="pin gnd" data-pin="GND" data-label="GND"></div>
-      <div class="pin gnd" data-pin="GND2" data-label="GND"></div>
-    </div>`;
-  setTimeout(() => {
-    comp.pins = [...el.querySelectorAll('.pin')].map(p => ({
-      el: p, name: p.dataset.pin,
-      center: () => pinCenter(p)
-    }));
-  }, 10);
-  return el;
-}
-
-function makeBreadboard(comp) {
-  const el = document.createElement('div');
-  el.className = 'breadboard';
-  let rows = '';
-  for (let r = 0; r < 10; r++) {
-    rows += '<div class="bb-row">';
-    for (let c = 0; c < 20; c++) {
-      rows += `<div class="bb-hole" data-row="${r}" data-col="${c}"></div>`;
-    }
-    rows += '</div>';
-  }
-  el.innerHTML = `<div class="bb-rail-top"></div><div class="bb-holes">${rows}</div><div class="bb-rail-bot"></div>`;
-  setTimeout(() => {
-    comp.pins = [...el.querySelectorAll('.bb-hole')].map(p => ({
-      el: p, name: `BB-${p.dataset.row}-${p.dataset.col}`,
-      center: () => pinCenter(p)
-    }));
-  }, 10);
-  return el;
-}
-
-function makeLED(comp, color) {
-  const colors = { red:'#ef4444', green:'#22c55e', blue:'#3b82f6', yellow:'#f59e0b' };
-  const off = { red:'#4c1d24', green:'#143825', blue:'#1e3a5f', yellow:'#4d3d14' };
-  const el = document.createElement('div');
-  el.className = 'led-comp';
-  el.innerHTML = `
-    <div class="led-body" id="lb-${comp.id}" style="background:${off[color]||off.red}"></div>
-    <div class="led-legs">
-      <div class="led-leg anode" data-pin="anode" data-label="+"></div>
-      <div class="led-leg" data-pin="cathode" data-label="−"></div>
-    </div>`;
-  el.dataset.ledColor = color;
-  el.dataset.ledColorOn = colors[color] || colors.red;
-  el.dataset.ledColorOff = off[color] || off.red;
-  setTimeout(() => {
-    comp.pins = [...el.querySelectorAll('.led-leg')].map(p => ({
-      el: p, name: p.dataset.pin, center: () => pinCenter(p)
-    }));
-  }, 10);
-  return el;
-}
-
-function makeResistor(comp) {
-  const el = document.createElement('div');
-  el.className = 'resistor-comp';
-  el.innerHTML = `
-    <div class="res-leg"></div>
-    <div class="res-body">
-      <div class="res-band" style="background:#ef4444"></div>
-      <div class="res-band" style="background:#ef4444"></div>
-      <div class="res-band" style="background:#7c3aed"></div>
-      <div class="res-band" style="background:#f59e0b"></div>
-    </div>
-    <div class="res-leg"></div>`;
-  setTimeout(() => {
-    comp.pins = [...el.querySelectorAll('.res-leg')].map((p,i) => ({
-      el: p, name: 'R'+i, center: () => pinCenter(p)
-    }));
-  }, 10);
-  return el;
-}
-
-function pinCenter(pinEl) {
-  const r = pinEl.getBoundingClientRect();
-  const cr = canvas.getBoundingClientRect();
-  return { x: r.left + r.width/2 - cr.left, y: r.top + r.height/2 - cr.top };
-}
-
-// ═══════════════════════════════════════
-//  DRAG & WIRE
-// ═══════════════════════════════════════
-function bindComp(comp) {
-  comp.el.addEventListener('mousedown', e => {
-    if (tool !== 'select') return;
-    if (e.target.closest('.pin,.bb-hole,.led-leg,.res-leg')) return;
-    dragging = comp;
-    const r = comp.el.getBoundingClientRect();
-    dOff = { x: e.clientX - r.left, y: e.clientY - r.top };
-    comp.el.style.zIndex = 100;
-    e.preventDefault();
-  });
-
-  comp.el.addEventListener('contextmenu', e => {
-    e.preventDefault();
-    ctxComp = comp; ctxWireIdx = -1;
-    showCtx(e.clientX, e.clientY);
-  });
-
-  // Wire: click on pin to start/end
-  comp.el.addEventListener('mousedown', e => {
-    if (tool !== 'wire') return;
-    const pin = e.target.closest('.pin,.bb-hole,.led-leg,.res-leg');
-    if (!pin) return;
-    const pinObj = comp.pins.find(p => p.el === pin);
-    if (!pinObj) return;
-
-    if (!isWiring) {
-      wireFrom = { comp, pin: pinObj };
-      isWiring = true;
-      tempWire.style.display = 'block';
-      tempWire.setAttribute('stroke', WIRE_COLORS[wireColor]);
-    } else {
-      if (!(comp === wireFrom.comp && pinObj.name === wireFrom.pin.name)) {
-        addWire(wireFrom.comp, wireFrom.pin, comp, pinObj);
-        toast('Wire connected!');
-      }
-      cancelWire();
-    }
-    e.preventDefault();
-    e.stopPropagation();
-  });
-}
+function onDragStart(e, type) { e.dataTransfer.setData('type', type); }
 
 function onDrop(e) {
   e.preventDefault();
   const type = e.dataTransfer.getData('type');
-  if (!type) return;
-  const r = canvas.getBoundingClientRect();
-  addComp(type, Math.max(8, e.clientX - r.left - 60), Math.max(8, e.clientY - r.top - 40));
-  toast('Component added');
+  const rect = document.getElementById('canvas').getBoundingClientRect();
+  const x = e.clientX - rect.left - 50;
+  const y = e.clientY - rect.top - 30;
+  createComponent(type, x, y);
 }
 
-function onMouseMove(e) {
-  if (dragging) {
-    const r = canvas.getBoundingClientRect();
-    const nx = Math.max(0, Math.min(e.clientX - r.left - dOff.x, r.width - 50));
-    const ny = Math.max(0, Math.min(e.clientY - r.top - dOff.y, r.height - 30));
-    dragging.x = nx; dragging.y = ny;
-    dragging.el.style.left = nx + 'px';
-    dragging.el.style.top  = ny + 'px';
-    redrawWires();
-  }
-  if (isWiring && wireFrom) {
-    const r = canvas.getBoundingClientRect();
-    const a = wireFrom.pin.center();
-    const b = { x: e.clientX - r.left, y: e.clientY - r.top };
-    const mid = (a.y + b.y) / 2 - 30;
-    tempWire.setAttribute('d',
-      `M${a.x},${a.y} C${a.x},${mid} ${b.x},${mid} ${b.x},${b.y}`);
-  }
-}
+function createComponent(type, x, y) {
+  const id = 'comp_' + Date.now() + '_' + Math.floor(Math.random() * 1000);
+  const comp = { id, type, x, y, state: { val: 0, dist: 50 } };
 
-function onMouseUp(e) {
-  if (dragging) { dragging.el.style.zIndex = ''; dragging = null; }
-}
+  const el = document.createElement('div');
+  el.className = 'node';
+  el.id = id;
+  el.style.left = x + 'px';
+  el.style.top = y + 'px';
 
-function cancelWire() {
-  isWiring = false; wireFrom = null;
-  tempWire.style.display = 'none';
-}
+  if (type === 'arduino') {
+    el.innerHTML = `
+      <div style="position: relative; width: 280px; height: 200px;">
+        <img src="ArduinoUno.svg.webp" style="width: 100%; height: 100%; pointer-events: none; display: block; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.5));">
 
-// ═══════════════════════════════════════
-//  WIRES
-// ═══════════════════════════════════════
-function addWire(c1, p1, c2, p2) {
-  const w = { id: 'w'+(uid++), c1, p1, c2, p2, color: wireColor };
-  wires.push(w);
-  redrawWires();
-  updateStats();
-}
+        <!-- Digital Pins -->
+        <div class="pin" data-cid="${id}" data-pin="D13" style="position: absolute; top: 7px; left: 119px;" title="D13"></div>
+        <div class="pin" data-cid="${id}" data-pin="D12" style="position: absolute; top: 7px; left: 130px;" title="D12"></div>
+        <div class="pin" data-cid="${id}" data-pin="D11" style="position: absolute; top: 7px; left: 141px;" title="D11"></div>
+        <div class="pin" data-cid="${id}" data-pin="D10" style="position: absolute; top: 7px; left: 152px;" title="D10"></div>
+        <div class="pin" data-cid="${id}" data-pin="D9"  style="position: absolute; top: 7px; left: 163px;" title="D9"></div>
+        <div class="pin" data-cid="${id}" data-pin="D8"  style="position: absolute; top: 7px; left: 174px;" title="D8"></div>
+        <div class="pin" data-cid="${id}" data-pin="D7"  style="position: absolute; top: 7px; left: 192px;" title="D7"></div>
+        <div class="pin" data-cid="${id}" data-pin="D6"  style="position: absolute; top: 7px; left: 203px;" title="D6"></div>
+        <div class="pin" data-cid="${id}" data-pin="D5"  style="position: absolute; top: 7px; left: 214px;" title="D5"></div>
+        <div class="pin" data-cid="${id}" data-pin="D4"  style="position: absolute; top: 7px; left: 225px;" title="D4"></div>
+        <div class="pin" data-cid="${id}" data-pin="D3"  style="position: absolute; top: 7px; left: 236px;" title="D3"></div>
+        <div class="pin" data-cid="${id}" data-pin="D2"  style="position: absolute; top: 7px; left: 247px;" title="D2"></div>
 
-function redrawWires() {
-  wireLayer.innerHTML = '';
-  wires.forEach((w, i) => {
-    const a = w.p1.center(), b = w.p2.center();
-    const mid = (a.y + b.y) / 2 - 30;
-    const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-    path.setAttribute('d', `M${a.x},${a.y} C${a.x},${mid} ${b.x},${mid} ${b.x},${b.y}`);
-    path.setAttribute('stroke', WIRE_COLORS[w.color] || WIRE_COLORS.red);
-    path.setAttribute('stroke-width', '2.5');
-    path.setAttribute('fill', 'none');
-    path.setAttribute('stroke-linecap', 'round');
-    path.style.filter = `drop-shadow(0 0 3px ${WIRE_COLORS[w.color]||WIRE_COLORS.red}88)`;
-    path.style.cursor = 'pointer';
-    path.style.pointerEvents = 'stroke';
-    path.dataset.idx = i;
-    path.addEventListener('contextmenu', e => {
-      e.preventDefault(); ctxComp = null; ctxWireIdx = i; showCtx(e.clientX, e.clientY);
+        <!-- Power Pins -->
+        <div class="pin" data-cid="${id}" data-pin="5V"  style="position: absolute; bottom: 7px; left: 163px;" title="5V"></div>
+        <div class="pin" data-cid="${id}" data-pin="GND" style="position: absolute; bottom: 7px; left: 174px;" title="GND"></div>
+        <div class="pin" data-cid="${id}" data-pin="GND" style="position: absolute; bottom: 7px; left: 185px;" title="GND"></div>
+
+        <!-- Analog Pins -->
+        <div class="pin" data-cid="${id}" data-pin="A0"  style="position: absolute; bottom: 7px; left: 206px;" title="A0"></div>
+        <div class="pin" data-cid="${id}" data-pin="A1"  style="position: absolute; bottom: 7px; left: 217px;" title="A1"></div>
+        <div class="pin" data-cid="${id}" data-pin="A2"  style="position: absolute; bottom: 7px; left: 228px;" title="A2"></div>
+        <div class="pin" data-cid="${id}" data-pin="A3"  style="position: absolute; bottom: 7px; left: 239px;" title="A3"></div>
+        <div class="pin" data-cid="${id}" data-pin="A4"  style="position: absolute; bottom: 7px; left: 250px;" title="A4"></div>
+        <div class="pin" data-cid="${id}" data-pin="A5"  style="position: absolute; bottom: 7px; left: 261px;" title="A5"></div>
+      </div>`;
+  } else if (type === 'breadboard') {
+    // إحداثيات محسوبة فعلياً من تحليل بكسلات breadboard.png (188×299) — نسب مئوية عشان تضل صحيحة أياً كان حجم العرض
+    const colXL = [22.87, 27.13, 31.91, 36.70, 41.49]; // a b c d e
+    const colXR = [55.85, 60.64, 65.43, 70.21, 75.00]; // f g h i j
+    const colNamesL = ['a', 'b', 'c', 'd', 'e'];
+    const colNamesR = ['f', 'g', 'h', 'i', 'j'];
+    const railLpwrX = 8.51, railLgndX = 13.83, railRpwrX = 85.64, railRgndX = 91.49;
+
+    const rowYMain = [7.02,10.03,13.04,16.05,19.06,22.07,25.08,28.09,31.10,33.78,36.79,39.80,42.81,45.82,48.83,51.84,54.85,57.86,60.87,63.88,66.89,69.90,72.91,75.92,78.60,81.94,84.62,87.96,90.97,93.65];
+    const rowYRail = [7.02,10.03,13.04,16.05,19.06, 25.08,28.09,31.10,33.78,36.79, 42.81,45.82,48.83,51.84,54.85, 62.54,65.55,68.56,71.57,74.58, 81.61,84.62,87.63,90.64,93.65];
+
+    let holesHTML = '';
+    rowYMain.forEach((top, i) => {
+      const r = i + 1;
+      colXL.forEach((x, j) => { holesHTML += `<div class="pin" data-cid="${id}" data-pin="BB_L_${colNamesL[j]}_${r}" style="position:absolute; top:${top}%; left:${x}%;" title="${colNamesL[j]}${r}"></div>`; });
+      colXR.forEach((x, j) => { holesHTML += `<div class="pin" data-cid="${id}" data-pin="BB_R_${colNamesR[j]}_${r}" style="position:absolute; top:${top}%; left:${x}%;" title="${colNamesR[j]}${r}"></div>`; });
     });
-    // Endpoint dots
-    [a, b].forEach(pt => {
-      const dot = document.createElementNS('http://www.w3.org/2000/svg','circle');
-      dot.setAttribute('cx', pt.x); dot.setAttribute('cy', pt.y); dot.setAttribute('r','3');
-      dot.setAttribute('fill', WIRE_COLORS[w.color]||WIRE_COLORS.red);
-      dot.setAttribute('stroke', '#05070f');
-      dot.setAttribute('stroke-width','1');
-      dot.style.pointerEvents = 'none';
-      wireLayer.appendChild(dot);
+    rowYRail.forEach((top, i) => {
+      const r = i + 1;
+      holesHTML += `<div class="pin" data-cid="${id}" data-pin="BB_LPWR_${r}" style="position:absolute; top:${top}%; left:${railLpwrX}%;" title="+ (Left)"></div>`;
+      holesHTML += `<div class="pin" data-cid="${id}" data-pin="BB_LGND_${r}" style="position:absolute; top:${top}%; left:${railLgndX}%;" title="- (Left)"></div>`;
+      holesHTML += `<div class="pin" data-cid="${id}" data-pin="BB_RPWR_${r}" style="position:absolute; top:${top}%; left:${railRpwrX}%;" title="+ (Right)"></div>`;
+      holesHTML += `<div class="pin" data-cid="${id}" data-pin="BB_RGND_${r}" style="position:absolute; top:${top}%; left:${railRgndX}%;" title="- (Right)"></div>`;
     });
-    wireLayer.appendChild(path);
+
+    el.innerHTML = `
+      <div style="position: relative; width: 220px; aspect-ratio: 188 / 299;">
+        <img src="breadboard.png" style="width: 100%; height: 100%; pointer-events: none; display: block; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.5));">
+        ${holesHTML}
+      </div>`;
+  } else if (type === 'ultrasonic') {
+    // إحداثيات محسوبة من تحليل بكسلات ultrasonic.png (344×186)
+    el.innerHTML = `
+      <div style="position: relative; width: 180px; background: transparent; border-radius: 8px; padding: 6px 6px 18px;">
+        <div style="position: relative; width: 100%; aspect-ratio: 344 / 186;">
+          <img src="ultrasonic.png" style="width: 100%; height: 100%; pointer-events: none; display: block;">
+          <div class="pin" data-cid="${id}" data-pin="VCC"  style="position: absolute; top: 98%; left: 41.86%;" title="VCC (+5V)"></div>
+          <div class="pin" data-cid="${id}" data-pin="TRIG" style="position: absolute; top: 98%; left: 47.09%;" title="TRIG"></div>
+          <div class="pin" data-cid="${id}" data-pin="ECHO" style="position: absolute; top: 98%; left: 52.33%;" title="ECHO"></div>
+          <div class="pin" data-cid="${id}" data-pin="GND"  style="position: absolute; top: 98%; left: 57.85%;" title="GND"></div>
+        </div>
+        <div style="margin-top: 10px; text-align: center;">
+          <input type="range" min="2" max="200" value="50" style="width: 120px; cursor: pointer;" oninput="updateCompState('${id}', 'dist', this.value); this.nextElementSibling.innerText=this.value+' cm'">
+          <span style="font-size: 11px; color: #38bdf8; font-weight: bold; margin-left: 4px;">50 cm</span>
+        </div>
+      </div>`;
+  } else if (type === 'pot') {
+    el.innerHTML = `
+      <div style="position: relative; width: 130px; height: 160px; background: transparent; border-radius: 8px; padding: 6px;">
+        <div style="position: relative; width: 110px; height: 110px; margin: 0 auto;">
+          <img src="potentiometer.png" style="width: 100%; height: 100%; pointer-events: none; display: block;">
+          <div class="pin" data-cid="${id}" data-pin="GND" style="position: absolute; bottom: 8px; left: 32px;" title="GND"></div>
+          <div class="pin" data-cid="${id}" data-pin="VCC" style="position: absolute; bottom: 8px; left: 49px;" title="VCC (+5V)"></div>
+          <div class="pin" data-cid="${id}" data-pin="SIG" style="position: absolute; bottom: 8px; left: 66px;" title="SIG (Signal)"></div>
+        </div>
+        <div style="margin-top: 6px; text-align: center;">
+          <input type="range" min="0" max="1023" value="0" style="width: 90px; cursor: pointer;" oninput="updateCompState('${id}', 'val', this.value); this.nextElementSibling.innerText=this.value">
+          <span style="font-size: 11px; color: #38bdf8; font-weight: bold; margin-left: 4px;">0</span>
+        </div>
+      </div>`;
+  } else if (type === 'led') {
+    // إحداثيات محسوبة من تحليل بكسلات led.png (216×876) — الكاثود أقصر ("32.87%,86.3%") والأنود أطول ("58.33%,99%")
+    el.innerHTML = `
+      <div style="position: relative; width: 50px; aspect-ratio: 216 / 876; text-align: center; background: transparent; margin: 0 auto;">
+        <div id="glow_${id}" style="position: absolute; top: 4%; left: 22%; width: 55%; height: 8%; border-radius: 50%; background: rgba(239, 68, 68, 0); transition: 0.3s; filter: blur(6px);"></div>
+        <img src="led.png" style="width: 100%; height: 100%; pointer-events: none; display: block; position: relative; z-index: 2;">
+        <div class="pin" data-cid="${id}" data-pin="CATHODE" style="position: absolute; top: 86.3%; left: 32.87%;" title="- (Cathode / Short Pin)"></div>
+        <div class="pin" data-cid="${id}" data-pin="ANODE"   style="position: absolute; top: 99%;   left: 58.33%;" title="+ (Anode / Long Pin)"></div>
+      </div>`;
+  } else if (type === 'buzzer') {
+    el.innerHTML = `
+      <div style="position: relative; width: 120px; height: 140px; text-align: center; background: transparent;">
+        <div style="position: relative; width: 100px; height: 120px; margin: 0 auto;">
+          <img src="buzzer.png" style="width: 100%; height: 100%; pointer-events: none; display: block;">
+          <div class="pin" data-cid="${id}" data-pin="NEG" style="position: absolute; bottom: 5px; left: 42px;" title="- (GND)"></div>
+          <div class="pin" data-cid="${id}" data-pin="POS" style="position: absolute; bottom: 5px; left: 51px;" title="+ (VCC / Signal)"></div>
+        </div>
+      </div>`;
+  }
+
+  document.getElementById('surface').appendChild(el);
+  comps.push(comp);
+  makeDraggable(el, comp);
+  bindPinEvents(el);
+}
+
+function updateCompState(id, key, val) {
+  const c = comps.find(x => x.id === id);
+  if (c) c.state[key] = parseInt(val);
+}
+
+function makeDraggable(el, comp) {
+  let isDragging = false, offX = 0, offY = 0;
+  el.addEventListener('mousedown', e => {
+    if (mode !== 'select' || e.target.classList.contains('pin') || e.target.tagName === 'INPUT') return;
+    isDragging = true;
+    offX = e.clientX - comp.x;
+    offY = e.clientY - comp.y;
   });
+  document.addEventListener('mousemove', e => {
+    if (!isDragging) return;
+    comp.x = e.clientX - offX;
+    comp.y = e.clientY - offY;
+    el.style.left = comp.x + 'px';
+    el.style.top = comp.y + 'px';
+    renderWires();
+  });
+  document.addEventListener('mouseup', () => isDragging = false);
 }
 
-// ═══════════════════════════════════════
-//  REMOVE
-// ═══════════════════════════════════════
-function removeComp(id) {
-  const idx = comps.findIndex(c => c.id === id);
-  if (idx < 0) return;
-  comps[idx].el.remove();
-  wires = wires.filter(w => w.c1.id !== id && w.c2.id !== id);
-  comps.splice(idx, 1);
-  redrawWires();
-  updateStats();
-  if (comps.length === 0) document.getElementById('hint').style.display = '';
-}
+function bindPinEvents(el) {
+  el.querySelectorAll('.pin').forEach(pin => {
+    pin.addEventListener('click', e => {
+      e.stopPropagation();
+      if (mode !== 'wire') return;
 
-function removeWire(idx) {
-  if (idx >= 0 && idx < wires.length) { wires.splice(idx,1); redrawWires(); updateStats(); }
-}
+      const cid = pin.dataset.cid;
+      const pname = pin.dataset.pin;
 
-function clearCanvas() {
-  stopSim();
-  [...comps].forEach(c => c.el.remove());
-  comps = []; wires = [];
-  wireLayer.innerHTML = '';
-  document.getElementById('hint').style.display = '';
-  updateStats();
-}
-
-// ═══════════════════════════════════════
-//  CONTEXT MENU
-// ═══════════════════════════════════════
-function showCtx(x, y) {
-  const c = document.getElementById('ctx');
-  c.style.left = x + 'px'; c.style.top = y + 'px';
-  c.classList.add('show');
-}
-function closeCtx() { document.getElementById('ctx').classList.remove('show'); }
-function ctxAction(a) {
-  if (a === 'delete' && ctxComp) removeComp(ctxComp.id);
-  else if (a === 'rotate' && ctxComp) {
-    ctxComp.rot = (ctxComp.rot + 90) % 360;
-    ctxComp.el.style.transform = `rotate(${ctxComp.rot}deg)`;
-    setTimeout(redrawWires, 50);
-  }
-  else if (a === 'deleteWire' && ctxWireIdx >= 0) removeWire(ctxWireIdx);
-  closeCtx();
-}
-
-// ═══════════════════════════════════════
-//  SIMULATION
-// ═══════════════════════════════════════
-function compileRun() {
-  if (simRunning) return;
-  const overlay = document.getElementById('overlay');
-  const fill = document.getElementById('progressFill');
-  const status = document.getElementById('compileStatus');
-  overlay.classList.add('show');
-  fill.style.width = '0%';
-
-  const steps = [
-    [15, 'avr-gcc -mmcu=atmega328p -c main.cpp'],
-    [40, 'Linking firmware.elf...'],
-    [65, 'avr-objcopy -O ihex firmware.hex'],
-    [85, 'Flash size: 1,234 bytes (4%)'],
-    [100, 'Done! Uploading to board...']
-  ];
-  let i = 0;
-  const t = setInterval(() => {
-    if (i >= steps.length) {
-      clearInterval(t);
-      overlay.classList.remove('show');
-      startSim();
-      return;
-    }
-    fill.style.width = steps[i][0] + '%';
-    status.textContent = steps[i][1];
-    i++;
-  }, 350);
-}
-
-function startSim() {
-  simRunning = true;
-  serialLog('info', '--- Simulation started ---');
-  serialLog('tx', 'Virtual Hub ready!');
-  toast('Simulation running!');
-  switchTab('serial');
-
-  const onLed = document.getElementById('aLedOn');
-  const txLed = document.getElementById('aLedTx');
-  let state = false;
-
-  simTimer = setInterval(() => {
-    state = !state;
-    if (onLed) onLed.classList.toggle('on', state);
-
-    // Detect connected LED on D13
-    wires.forEach(w => {
-      const fromArduino = w.c1.type === 'arduino' && w.p1.name === 'D13';
-      const toArduino   = w.c2.type === 'arduino' && w.p2.name === 'D13';
-      const ledComp = fromArduino ? w.c2 : toArduino ? w.c1 : null;
-      if (ledComp && ledComp.type.startsWith('led-')) {
-        const body = ledComp.el.querySelector('.led-body');
-        if (body) {
-          body.style.background = state
-            ? ledComp.el.dataset.ledColorOn
-            : ledComp.el.dataset.ledColorOff;
-          body.style.boxShadow = state
-            ? `0 0 10px ${ledComp.el.dataset.ledColorOn}, 0 0 20px ${ledComp.el.dataset.ledColorOn}88`
-            : 'inset 0 2px 4px rgba(0,0,0,.5)';
+      if (!activeWireStart) {
+        activeWireStart = { cid, pname, el: pin };
+        pin.style.outline = '2px solid yellow';
+      } else {
+        if (activeWireStart.cid !== cid) {
+          wires.push({
+            id: 'wire_' + Date.now(),
+            from: activeWireStart,
+            to: { cid, pname, el: pin },
+            color: currentColor
+          });
         }
+        activeWireStart.el.style.outline = 'none';
+        activeWireStart = null;
+        renderWires();
       }
     });
-
-    serialLog('tx', state ? 'LED ON  ✓' : 'LED OFF');
-    if (txLed) { txLed.classList.add('on'); setTimeout(() => txLed.classList.remove('on'), 80); }
-  }, 1000);
+  });
 }
 
-function stopSim() {
-  simRunning = false;
-  if (simTimer) { clearInterval(simTimer); simTimer = null; }
-  ['aLedOn','aLedTx','aLedRx'].forEach(id => {
-    const el = document.getElementById(id);
-    if (el) el.classList.remove('on');
+function renderWires() {
+  const svg = document.getElementById('svgLayer');
+  svg.innerHTML = '';
+  const canvasRect = document.getElementById('canvas').getBoundingClientRect();
+
+  wires.forEach(w => {
+    const r1 = w.from.el.getBoundingClientRect();
+    const r2 = w.to.el.getBoundingClientRect();
+    const x1 = r1.left + r1.width / 2 - canvasRect.left;
+    const y1 = r1.top + r1.height / 2 - canvasRect.top;
+    const x2 = r2.left + r2.width / 2 - canvasRect.left;
+    const y2 = r2.top + r2.height / 2 - canvasRect.top;
+
+    const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    path.setAttribute('d', `M ${x1} ${y1} C ${x1} ${(y1 + y2) / 2}, ${x2} ${(y1 + y2) / 2}, ${x2} ${y2}`);
+    path.setAttribute('stroke', w.color);
+    path.setAttribute('stroke-width', '3.5');
+    path.setAttribute('fill', 'none');
+    path.setAttribute('class', 'wire-path');
+    path.onclick = () => { if (confirm('حذف هذا السلك؟')) { wires = wires.filter(x => x.id !== w.id); renderWires(); } };
+    svg.appendChild(path);
   });
-  comps.filter(c => c.type.startsWith('led-')).forEach(c => {
-    const body = c.el.querySelector('.led-body');
-    if (body) {
-      body.style.background = c.el.dataset.ledColorOff;
-      body.style.boxShadow = 'inset 0 2px 4px rgba(0,0,0,.5)';
+}
+
+function getConnectedComponentPin(ardPin) {
+  const wire = wires.find(w => (w.from.pname === ardPin) || (w.to.pname === ardPin));
+  if (!wire) return null;
+  return (wire.from.pname === ardPin) ? wire.to : wire.from;
+}
+
+function runSimulation() {
+  stopSimulation();
+  showTab('serial');
+  const consoleEl = document.getElementById('serialConsole');
+  consoleEl.innerHTML = `<span style="color:#60a5fa">[System] Engine Running...</span><br>`;
+
+  simInterval = setInterval(() => {
+    let potVal = 0;
+    const a0Conn = getConnectedComponentPin('A0');
+    if (a0Conn) {
+      const potComp = comps.find(c => c.id === a0Conn.cid && c.type === 'pot');
+      if (potComp) potVal = potComp.state.val;
     }
+
+    let distVal = 50;
+    const ultraComp = comps.find(c => c.type === 'ultrasonic');
+    if (ultraComp) distVal = ultraComp.state.dist;
+
+    consoleEl.innerHTML += `Potentiometer (A0): ${potVal} | Distance (HC-SR04): ${distVal}cm<br>`;
+    consoleEl.scrollTop = consoleEl.scrollHeight;
+
+    const shouldTrigger = (distVal < 30 || potVal > 500);
+
+    const d9Conn = getConnectedComponentPin('D9');
+    if (d9Conn) {
+      const ledGlow = document.getElementById('glow_' + d9Conn.cid);
+      if (ledGlow) {
+        ledGlow.style.background = shouldTrigger ? 'rgba(239, 68, 68, 0.85)' : 'rgba(239, 68, 68, 0)';
+        ledGlow.style.boxShadow = shouldTrigger ? '0 0 20px #ef4444' : 'none';
+      }
+    }
+
+    const d8Conn = getConnectedComponentPin('D8');
+    if (d8Conn) {
+      const buzComp = comps.find(c => c.id === d8Conn.cid && c.type === 'buzzer');
+      if (buzComp && shouldTrigger) triggerBuzzerSound();
+    }
+  }, 600);
+}
+
+function triggerBuzzerSound() {
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  const osc = audioCtx.createOscillator();
+  const gain = audioCtx.createGain();
+  osc.type = 'square';
+  osc.frequency.setValueAtTime(440, audioCtx.currentTime);
+  gain.gain.setValueAtTime(0.05, audioCtx.currentTime);
+  osc.connect(gain);
+  gain.connect(audioCtx.destination);
+  osc.start();
+  osc.stop(audioCtx.currentTime + 0.15);
+}
+
+function stopSimulation() {
+  if (simInterval) clearInterval(simInterval);
+  document.querySelectorAll('[id^="glow_"]').forEach(g => {
+    g.style.background = 'rgba(239, 68, 68, 0)';
+    g.style.boxShadow = 'none';
   });
-  serialLog('info', '--- Simulation stopped ---');
 }
 
-// ═══════════════════════════════════════
-//  TABS & SERIAL
-// ═══════════════════════════════════════
-function switchTab(tab) {
-  document.querySelectorAll('.rtab').forEach((t,i) => t.classList.toggle('active', (i===0&&tab==='code')||(i===1&&tab==='serial')));
-  document.getElementById('codeSection').classList.toggle('hidden', tab !== 'code');
-  document.getElementById('serialSection').classList.toggle('hidden', tab !== 'serial');
+function showTab(t) {
+  document.querySelectorAll('.tab').forEach((el, i) => el.classList.toggle('active', (i === 0 && t === 'code') || (i === 1 && t === 'serial')));
+  document.getElementById('codeArea').style.display = t === 'code' ? 'block' : 'none';
+  document.getElementById('serialConsole').style.display = t === 'serial' ? 'block' : 'none';
 }
 
-function serialLog(type, msg) {
-  const out = document.getElementById('serialOut');
-  const t = new Date().toTimeString().slice(0,8);
-  const line = document.createElement('div');
-  line.className = `serial-line s-${type}`;
-  line.innerHTML = `<span class="s-time">[${t}]</span>${msg}`;
-  out.appendChild(line);
-  out.scrollTop = out.scrollHeight;
-}
-
-function sendSerial() {
-  const inp = document.getElementById('serialInput');
-  const v = inp.value.trim();
-  if (!v) return;
-  serialLog('tx', '→ ' + v);
-  inp.value = '';
-}
-
-// ═══════════════════════════════════════
-//  UTILS
-// ═══════════════════════════════════════
-function updateStats() {
-  document.getElementById('statsLabel').textContent =
-    `Components: ${comps.length} | Wires: ${wires.length}`;
-}
-
-function toast(msg) {
-  const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 2200);
-}
+window.onload = () => {
+  createComponent('arduino', 30, 40);
+  createComponent('breadboard', 320, 40);
+  createComponent('ultrasonic', 30, 260);
+  createComponent('led', 220, 260);
+};
 </script>
 </body>
 </html>
